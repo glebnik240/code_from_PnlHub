@@ -1,0 +1,51 @@
+<table class="table table-sm table-hover">
+    <thead>
+    <tr>
+        % for column in cols_rows[0].keys():
+            <th>{{ !column }}</th>
+        % end
+    </tr>
+    </thead>
+    <tbody>
+    % for col_row in cols_rows:
+    <tr>
+        % for value in col_row.values():
+            % if str(value).lower() == 'buy':
+                <td style="color: #1bdf21;">{{ !value }}</td>
+            % elif str(value).lower() == 'sell':
+                <td style="color: #e70c0c;">{{ !value }}</td>
+            % else:
+                <td>{{ !value }}</td>
+            % end
+        % end
+    </tr>
+    % end
+    </tbody>
+</table>
+
+
+<script>
+initial_data = {{ !initial_data }}
+areaSeries.setData(initial_data)
+
+function connectToWs() {
+    var ws = new WebSocket("ws://127.0.0.1:8000/websocket/{{ !timeframe }}");
+    ws.onmessage = function(evt) {
+            new_errors = JSON.parse(evt.data)
+            for (let i = 0; i < new_errors.length; i++) {
+                error = new_errors[i]
+                if (initial_data.find(elem=>elem.time == error.time)
+                    === undefined){initial_data.push(error)}
+                else {index_of_old_elem = initial_data.findIndex(item =>
+                                          item.time == error.time)
+                      initial_data[index_of_old_elem] = error
+                       }}
+            areaSeries.setData(initial_data);
+        };
+    ws.onopen = function(evt) {
+        $('#connection_status').html('<b>Connected</b>');
+    }
+    ws.onerror = function(evt) {
+        $('#connection_status').html('<b>Error</b>');
+</script>
+
