@@ -35,6 +35,59 @@ def round_all_floats(_dict, exceptions=()):
     return _dict
 
 
+data = [
+    {
+        'type': 'line',
+        'color': 'green',
+        'name': 'мой USD кошелек',
+        'value': [1, 5, 8],
+        'time': [1, 4, 5],
+        'info': ['J2Ph3qLLxI', 'lIy6DhO3jD', '5UbeITXcFK']
+    },
+    {
+        'type': 'points',
+        'color': 'red',
+        'name': 'DOTS',
+        'value': [2, 3, 7],
+        'time': [1, 4, 5],
+        'info': ['J2Ph3qLLxI', 'lIy6DhO3jD', '5UbeITXcFK']
+    }
+]
+
+
+def bokeh_chart(data: list) -> None:
+    fig = figure(
+        height=800, width=1000,
+        x_axis_label='Date', y_axis_label='$',
+        toolbar_location="above", y_axis_location="right",
+        x_axis_type='datetime',
+        tools=['pan', 'crosshair', 'wheel_zoom', 'box_zoom', 'reset', 'save'],
+        tooltips=[("time", "@x"), ("value", "@y"), ("info", "@info")]
+    )
+
+    for d in data:
+        d['source'] = ColumnDataSource(
+            data=dict(x=d['time'], y=d['value'], info=d['info']))
+        if d['type'] == 'line':
+            fig.line('x', 'y', legend_label=d['name'], line_color=d['color'],
+                     line_width=2, source=d['source'])
+        elif d['type'] == 'points':
+            fig.circle("x", "y", legend_label=d['name'], color=d['color'],
+                       size=10, source=d['source'])
+
+    fig.legend.location = "top_left"
+
+    x = ['1', '2', '3']
+    y = [1, 2, 4]
+    fig1 = figure(x_range=x, height=800, width=1000,
+                  y_axis_location="right", x_axis_type='datetime')
+    fig1.vbar(x=x, top=y, width=0.1, alpha=0.2)
+    g = gridplot([[fig1, fig]], merge_tools=True)
+    g.toolbar.logo = None
+
+    show(g)
+
+
 NEW_ERRORS_DAY = None
 NEW_ERRORS_HOUR = None
 
@@ -116,7 +169,3 @@ for api_key_name, sub_names in orders.items():
             elif not _orders:
                 orders[api_key_name][sub_name][type_type] = {'button': '',
                                                              'orders': []}
-
-
-
-
